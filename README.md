@@ -6,3 +6,9 @@
 ## Usage
 
 Requires a CPU with the Intel SSE and AVX instruction set extensions.
+
+Build and configure using CMake:
+
+`cmake -B build/`
+
+`cmake --build build/`
