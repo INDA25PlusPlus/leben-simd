@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 #include "clock.h"
 
 
@@ -25,4 +27,4 @@ typedef struct benchmark_results {
 
 void destroy_benchmark_results(benchmark_results_t *results);
 
-benchmark_results_t benchmark(benchmark_params_t params);
+benchmark_results_t benchmark(benchmark_params_t params, bool print_progress);

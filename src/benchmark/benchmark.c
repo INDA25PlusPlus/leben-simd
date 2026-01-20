@@ -4,6 +4,7 @@
 
 #include "benchmark.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "../mandelbrot/mandelbrot.h"
@@ -11,11 +12,11 @@
 
 void time_mandelbrot(
     unsigned batch_count, unsigned batch_size, mandelbrot_calc_t *calc,
-    unsigned max_iterations, timespec_t *batch_times);
+    unsigned max_iterations, timespec_t *batch_times, bool print_progress);
 
 void time_mandelbrot_simd(
     unsigned batch_count, unsigned batch_size, mandelbrot_calc_t *calc,
-    unsigned max_iterations, timespec_t *batch_times);
+    unsigned max_iterations, timespec_t *batch_times, bool print_progress);
 
 void destroy_benchmark_results(benchmark_results_t *results) {
     free(results->sisd_times);
@@ -24,7 +25,7 @@ void destroy_benchmark_results(benchmark_results_t *results) {
     results->simd_times = NULL;
 }
 
-benchmark_results_t benchmark(benchmark_params_t params) {
+benchmark_results_t benchmark(benchmark_params_t params, bool print_progress) {
     mandelbrot_calc_t calc = make_mandelbrot_calc(params.x_res, params.y_res);
 
     timespec_t *sisd_times = malloc(sizeof(timespec_t) * params.batch_count);
@@ -34,13 +35,15 @@ benchmark_results_t benchmark(benchmark_params_t params) {
         &calc, params.x_center, params.y_center, params.view_height,
         params.max_iterations, 1.f);
     time_mandelbrot(params.batch_count, params.batch_size, &calc,
-        params.max_iterations, sisd_times);
+        params.max_iterations, sisd_times, print_progress);
 
     init_mandelbrot_calc(
         &calc, params.x_center, params.y_center, params.view_height,
         params.max_iterations, 1.f);
     time_mandelbrot_simd(params.batch_count, params.batch_size, &calc,
-        params.max_iterations, simd_times);
+        params.max_iterations, simd_times, print_progress);
+
+    destroy_mandelbrot_calc(&calc);
 
     return (benchmark_results_t) {
         sisd_times,
@@ -53,7 +56,7 @@ benchmark_results_t benchmark(benchmark_params_t params) {
  */
 void time_mandelbrot(
     unsigned batch_count, unsigned batch_size, mandelbrot_calc_t *calc,
-    unsigned max_iterations, timespec_t *batch_times)
+    unsigned max_iterations, timespec_t *batch_times, bool print_progress)
 {
     for (unsigned i = 0; i < batch_count; i++) {
         // warmup
@@ -65,6 +68,8 @@ void time_mandelbrot(
             run_mandelbrot_calc(calc, max_iterations);
         }
         batch_times[i] = stop_timer();
+        if (print_progress)
+            printf("[SISD] %u/%u\n", i + 1, batch_count);
     }
 }
 
@@ -73,7 +78,7 @@ void time_mandelbrot(
  */
 void time_mandelbrot_simd(
     unsigned batch_count, unsigned batch_size, mandelbrot_calc_t *calc,
-    unsigned max_iterations, timespec_t *batch_times)
+    unsigned max_iterations, timespec_t *batch_times, bool print_progress)
 {
     for (unsigned i = 0; i < batch_count; i++) {
         // warmup
@@ -85,5 +90,7 @@ void time_mandelbrot_simd(
             run_mandelbrot_calc_simd(calc, max_iterations);
         }
         batch_times[i] = stop_timer();
+        if (print_progress)
+            printf("[SIMD] %u/%u\n", i + 1, batch_count);
     }
 }

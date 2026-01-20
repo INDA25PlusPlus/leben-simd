@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "benchmark/benchmark.h"
 #include "benchmark/clock.h"
+#include "benchmark/stats.h"
 #include "img/stb_image_write.h"
 #include "mandelbrot/mandelbrot.h"
 
@@ -15,7 +17,81 @@ float to_float(char *str);
 
 void write_img(void *file_handle, void *data, int size);
 
+int benchmark_program(int argc, char *argv[]);
+
+int disp_program(int argc, char *argv[]);
+
 int main(int argc, char *argv[]) {
+    if (argc > 1 && strcmp(argv[1], "--bench") == 0) {
+        return benchmark_program(argc, argv);
+    } else {
+        return disp_program(argc, argv);
+    }
+}
+
+void print_usage_info() {
+    printf(
+        "Usage:\n"
+        "exe [<x_res> <y_res> <x_pos> <y_pos> <view_height> <max_iterations>] [<out_path> [-f]]\n"
+        "    --bench <batch_count> <batch_size> <x_res> <y_res> <x_pos> <y_pos> <view_height> <max_iterations>\n"
+    );
+}
+
+int benchmark_program(int argc, char *argv[]) {
+    if (argc != 10) {
+        print_usage_info();
+        exit(EXIT_FAILURE);
+    }
+
+    unsigned batch_count = to_int(argv[2]);
+    unsigned batch_size = to_int(argv[3]);
+
+    unsigned x_res = to_int(argv[4]);
+    if (x_res % 8 != 0) {
+        printf("x_res must be multiple of 8!\n");
+        exit(EXIT_FAILURE);
+    }
+    unsigned y_res = to_int(argv[5]);
+
+    float x_pos = to_float(argv[6]);
+    float y_pos = to_float(argv[7]);
+
+    float view_height = to_float(argv[8]);
+    unsigned max_iterations = to_int(argv[9]);
+
+    benchmark_params_t params = {
+        batch_count, batch_size,
+        x_res, y_res,
+        x_pos, y_pos, view_height,
+        max_iterations
+    };
+
+    printf(
+        "Benchmarking %u batches of %u runs...\n",
+        batch_count, batch_size);
+
+    benchmark_results_t results = benchmark(params, true);
+
+    float sisd_average = average_ns(results.sisd_times, batch_count, batch_size);
+    float simd_average = average_ns(results.simd_times, batch_count, batch_size);
+    float sisd_stddev = stddev_ns(results.sisd_times, batch_count, sisd_average, batch_size);
+    float simd_stddev = stddev_ns(results.simd_times, batch_count, simd_average, batch_size);
+
+    printf(
+        "Results:\n"
+        "SISD average: %uns\n"
+        "SISD stddev:  %uns\n"
+        "SIMD average: %uns\n"
+        "SIMD stddev:  %uns\n",
+        (unsigned) sisd_average, (unsigned) sisd_stddev,
+        (unsigned) simd_average, (unsigned) simd_stddev);
+
+    destroy_benchmark_results(&results);
+
+    return EXIT_SUCCESS;
+}
+
+int disp_program(int argc, char *argv[]) {
     unsigned x_res, y_res;
     float x_pos, y_pos, view_height;
     unsigned max_iterations;
@@ -53,10 +129,7 @@ int main(int argc, char *argv[]) {
             }
         }
     } else {
-        printf(
-            "Usage:\n"
-            "exe [<x_res> <y_res> <x_pos> <y_pos> <view_height> <max_iterations>] [<out_path> [-f]]\n"
-        );
+        print_usage_info();
         exit(EXIT_FAILURE);
     }
 
@@ -108,7 +181,7 @@ int main(int argc, char *argv[]) {
 
     destroy_mandelbrot_calc(&calc);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 unsigned to_int(char *str) {
