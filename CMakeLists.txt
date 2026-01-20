@@ -15,6 +15,8 @@ add_executable(leben_simd src/main.c
         src/benchmark/clock.h
         src/benchmark/benchmark.c
         src/benchmark/benchmark.h
+        src/benchmark/stats.c
+        src/benchmark/stats.h
 )
 
 # fma: fma instructions (fused mult-add)
