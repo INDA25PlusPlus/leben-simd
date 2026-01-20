@@ -13,6 +13,8 @@ add_executable(leben_simd src/main.c
         src/img/stb_image_write.h
         src/benchmark/clock.c
         src/benchmark/clock.h
+        src/benchmark/benchmark.c
+        src/benchmark/benchmark.h
 )
 
 # fma: fma instructions (fused mult-add)

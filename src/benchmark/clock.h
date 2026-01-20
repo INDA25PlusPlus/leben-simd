@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <time.h>
+
 
 typedef struct timespec timespec_t;
 

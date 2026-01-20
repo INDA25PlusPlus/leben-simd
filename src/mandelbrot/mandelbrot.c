@@ -127,13 +127,12 @@ mandelbrot_calc_t make_mandelbrot_calc(unsigned x_res, unsigned y_res) {
         exit(EXIT_FAILURE);
     }
 
-    mandelbrot_calc_t calc = {
+    return (mandelbrot_calc_t) {
         c_values,
         depth,
         x_res,
         y_res
     };
-    return calc;
 }
 
 void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height, unsigned max_iterations, float pixel_aspect_ratio) {
