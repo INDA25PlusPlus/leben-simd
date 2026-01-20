@@ -4,13 +4,15 @@ project(leben_simd C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(leben_simd src/main.c
-        src/mandelbrot/mandelbrot.h
         src/mandelbrot/mandelbrot.c
+        src/mandelbrot/mandelbrot.h
         src/config.h
-        src/mandelbrot/math_util.h
         src/mandelbrot/math_util.c
-        src/img/stb_image_write.h
+        src/mandelbrot/math_util.h
         src/img/stb_image_write.c
+        src/img/stb_image_write.h
+        src/benchmark/clock.c
+        src/benchmark/clock.h
 )
 
 # fma: fma instructions (fused mult-add)

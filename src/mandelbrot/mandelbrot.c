@@ -6,11 +6,9 @@
 #include <stdbool.h>
 #include <stdalign.h>
 #include <stdio.h>
-
-#include "mandelbrot.h"
-
 #include <math.h>
 
+#include "mandelbrot.h"
 #include "../config.h"
 #include "math_util.h"
 

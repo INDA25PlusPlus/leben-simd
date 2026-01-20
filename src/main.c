@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "benchmark/clock.h"
 #include "img/stb_image_write.h"
 #include "mandelbrot/mandelbrot.h"
 
@@ -62,7 +63,10 @@ int main(int argc, char *argv[]) {
     mandelbrot_calc_t calc = make_mandelbrot_calc(x_res, y_res);
 
     init_mandelbrot_calc(&calc, x_pos, y_pos, view_height, max_iterations, pixel_aspect_ratio);
+
+    start_timer();
     run_mandelbrot_calc_simd(&calc, max_iterations);
+    timespec_t duration = stop_timer();
 
     if (out_path == NULL) {
         char ascii_map[12] = " .:-=+*#%@@";
@@ -81,6 +85,11 @@ int main(int argc, char *argv[]) {
         FILE *out_img = fopen(
             out_path,
             out_overwrite ? "wb+" : "wb+x");
+        if (out_img == NULL) {
+            printf("Failed to open file '%s'\n", out_path);
+            exit(EXIT_FAILURE);
+        }
+
         char *buffer = malloc(sizeof(char) * calc.x_res * calc.y_res);
         for (unsigned y = 0; y < y_res; y++) {
             for (unsigned x = 0; x < x_res; x++) {
@@ -89,11 +98,13 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        stbi_write_png_to_func(&write_img, (void *) out_img, x_res, y_res, 1, buffer, 0);
+        stbi_write_png_to_func(&write_img, out_img, x_res, y_res, 1, buffer, 0);
 
         fclose(out_img);
         free(buffer);
     }
+
+    printf("Duration: %lus, %luns\n", duration.tv_sec, duration.tv_nsec);
 
     destroy_mandelbrot_calc(&calc);
 
