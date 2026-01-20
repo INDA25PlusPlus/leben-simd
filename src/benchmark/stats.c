@@ -7,27 +7,27 @@
 #include <math.h>
 
 
-float timespec_to_secs(timespec_t time);
+float timespec_to_ns(timespec_t time);
 
-float average_secs(timespec_t *times, unsigned size, unsigned batch_size) {
+float average_ns(timespec_t *times, unsigned batch_count, unsigned batch_size) {
     float sum = 0;
     float factor = 1.f / batch_size;
-    for (unsigned i = 0; i < size; i++) {
-        sum += timespec_to_secs(times[i]) * factor;
+    for (unsigned i = 0; i < batch_count; i++) {
+        sum += timespec_to_ns(times[i]) * factor;
     }
-    return sum / size;
+    return sum / batch_count;
 }
 
-float stddev_secs(timespec_t *times, unsigned size, float average, unsigned batch_size) {
+float stddev_ns(timespec_t *times, unsigned batch_count, float average, unsigned batch_size) {
     float sum = 0;
     float factor = 1.f / batch_size;
-    for (unsigned i = 0; i < size; i++) {
-        float diff = average - timespec_to_secs(times[i]) * factor;
-        sum += diff * diff;
+    for (unsigned i = 0; i < batch_count; i++) {
+        float diff = average - timespec_to_ns(times[i]) * factor;
+        sum += batch_size * diff * diff;
     }
-    return sqrtf(sum / ((float) size - 1));
+    return sqrtf(sum / ((float) (batch_count * batch_size) - 1));
 }
 
-float timespec_to_secs(timespec_t time) {
-    return (float) time.tv_sec + (float) time.tv_nsec / 1000000000.f;
+float timespec_to_ns(timespec_t time) {
+    return (float) time.tv_sec * 1000000000.f + (float) time.tv_nsec;
 }
