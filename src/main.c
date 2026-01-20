@@ -33,7 +33,7 @@ void print_usage_info() {
     printf(
         "Usage:\n"
         "exe [<x_res> <y_res> <x_pos> <y_pos> <view_height> <max_iterations>] [<out_path> [-f]]\n"
-        "    --bench <batch_count> <batch_size> <x_res> <y_res> <x_pos> <y_pos> <view_height> <max_iterations>\n"
+        "exe --bench <batch_count> <batch_size> <x_res> <y_res> <x_pos> <y_pos> <view_height> <max_iterations>\n"
     );
 }
 
