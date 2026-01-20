@@ -107,9 +107,9 @@ mandelbrot_calc_t make_mandelbrot_calc(unsigned x_res, unsigned y_res) {
     return calc;
 }
 
-void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height, unsigned max_iterations) {
+void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height, unsigned max_iterations, float pixel_aspect_ratio) {
     float scale = view_height / (float) calc->y_res;
-    float horizontal_scale = scale / char_height_ratio;
+    float horizontal_scale = scale / pixel_aspect_ratio;
     float view_width = horizontal_scale * (float) calc->x_res;
 
     for (unsigned y = 0; y < calc->y_res; y++) {

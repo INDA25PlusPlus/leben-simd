@@ -16,7 +16,7 @@ typedef struct mandelbrot_calc {
 
 mandelbrot_calc_t make_mandelbrot_calc(unsigned x_res, unsigned y_res);
 
-void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height, unsigned max_iterations);
+void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height, unsigned max_iterations, float pixel_aspect_ratio);
 
 void run_mandelbrot_calc(mandelbrot_calc_t const *calc, unsigned max_iterations);
 

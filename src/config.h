@@ -5,4 +5,3 @@
 #pragma once
 
 float const static max_abs = 10.f;
-float const static char_height_ratio = 2;

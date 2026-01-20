@@ -9,6 +9,8 @@ add_executable(leben_simd src/main.c
         src/config.h
         src/mandelbrot/math_util.h
         src/mandelbrot/math_util.c
+        src/img/stb_image_write.h
+        src/img/stb_image_write.c
 )
 
 # fma: fma instructions (fused mult-add)
