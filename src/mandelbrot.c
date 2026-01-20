@@ -4,6 +4,8 @@
 
 #include <xmmintrin.h>
 #include <stdbool.h>
+#include <stdalign.h>
+#include <stdio.h>
 
 #include "mandelbrot.h"
 #include "config.h"
@@ -77,4 +79,73 @@ void mandelbrot(float const *c, unsigned *depth) {
     }
 
     _mm256_store_si256((__m256i *) depth, depth_v);
+}
+
+mandelbrot_calc_t make_mandelbrot_calc(unsigned x_res, unsigned y_res) {
+    if (x_res % 8 != 0) {
+        printf("x_res must be multiple of 8!");
+        exit(EXIT_FAILURE);
+    }
+
+    unsigned size = x_res * y_res;
+
+    // NOTE: length is 2 * size
+    float *c_values = aligned_alloc(alignof(__m256), sizeof(float) * 2 * size);
+    unsigned *depth = aligned_alloc(alignof(__m256i), sizeof(int) * size);
+
+    if (c_values == NULL || depth == NULL) {
+        printf("mandelbrot_calc allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    mandelbrot_calc_t calc = {
+        c_values,
+        depth,
+        x_res,
+        y_res
+    };
+    return calc;
+}
+
+void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height) {
+    float scale = view_height / (float) calc->y_res;
+    float horizontal_scale = scale / char_height_ratio;
+    float view_width = horizontal_scale * (float) calc->x_res;
+
+    for (unsigned y = 0; y < calc->y_res; y++) {
+        float cim = (float) y * scale - .5f * view_height + y_center;
+
+        for (unsigned x = 0; x < calc->x_res; x += 8) {
+            unsigned index = y * calc->x_res + x;
+
+            for (unsigned xs = 0; xs < 8; xs++) {
+                float cre = (float) (x + xs) * horizontal_scale - .5f * view_width + x_center;
+
+                calc->c_values[2 * index + xs] = cre;
+                calc->c_values[2 * index + 8 + xs] = cim;
+                calc->depth[index + xs] = max_depth;
+            }
+        }
+    }
+}
+
+void run_mandelbrot_calc(mandelbrot_calc_t const *calc) {
+    for (unsigned y = 0; y < calc->y_res; y++) {
+        for (unsigned x = 0; x < calc->x_res; x += 8) {
+            unsigned index = y * calc->x_res + x;
+            mandelbrot(&calc->c_values[2 * index], &calc->depth[index]);
+        }
+    }
+}
+
+float get_mandelbrot_intensity(mandelbrot_calc_t const *calc, unsigned x, unsigned y) {
+    unsigned index = y * calc->x_res + x;
+    return (float) calc->depth[index] / (float) max_depth;
+}
+
+void destroy_mandelbrot_calc(mandelbrot_calc_t *calc) {
+    free(calc->c_values);
+    calc->c_values = NULL;
+    free(calc->depth);
+    calc->depth = NULL;
 }
