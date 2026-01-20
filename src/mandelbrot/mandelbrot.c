@@ -8,20 +8,51 @@
 #include <stdio.h>
 
 #include "mandelbrot.h"
+
+#include <math.h>
+
 #include "../config.h"
 #include "math_util.h"
 
 
 /**
+ * c[0..8] = c_real, c[8..16] = c_imag
+ */
+void mandelbrot(float const *c, unsigned *depth, unsigned max_iterations) {
+    for (unsigned i = 0; i < 8; i++) {
+        float const cre = c[0 + i];
+        float const cim = c[8 + i];
+        float zre = cre;
+        float zim = cim;
+        for (int current_depth = 0; current_depth < max_iterations; current_depth++) {
+            // z1 = z0^2 + c
+            // = (zre + zim i)^2 + cre + cim i
+            // = (zre^2 - zim^2 + cre) + (2 zre zim + cim) i
+            float zre_temp = fmaf(zre, zre, -fmaf(zim, zim, -cre));
+            zim = 2 * zre * zim + cim;
+            zre = zre_temp;
+
+            // approximate |z|
+            float z_abs = fmaxf(fabsf(zre), fabsf(zim));
+
+            if (z_abs > max_abs) {
+                break;
+            }
+            depth[i] = current_depth;
+        }
+    }
+}
+
+/**
  * c points at {c_real, c_imag}
  * z points at {z_real, z_imag}
  */
-void mandelbrot_iter(__m256 const *c, __m256 *z) {
+void mandelbrot_simd_iter(__m256 const *c, __m256 *z) {
     __m256 const two = _mm256_set1_ps(2.f);
 
     // z1 = z0^2 + c
     // = (zre + zim i)^2 + cre + cim i
-    // = (zre^2 - zim + cre) + (2 zre im + cim) i
+    // = (zre^2 - zim^2 + cre) + (2 zre zim + cim) i
 
     __m256 zre = z[0];
     __m256 zim = z[1];
@@ -38,10 +69,10 @@ void mandelbrot_iter(__m256 const *c, __m256 *z) {
 }
 
 /**
- * c points at {c_real, c_imag}
+ * c[0..8] = c_real, c[8..16] = c_imag
  * c and depth must be aligned as __m256
  */
-void mandelbrot(float const *c, unsigned *depth, unsigned max_iterations) {
+void mandelbrot_simd(float const *c, unsigned *depth, unsigned max_iterations) {
     __m256 const max_abs_v = _mm256_set1_ps(max_abs);
 
     __m256 c_v[2];
@@ -55,7 +86,7 @@ void mandelbrot(float const *c, unsigned *depth, unsigned max_iterations) {
     __m256i depth_v = _mm256_load_si256((__m256i *) depth);
 
     for (int current_depth = 0; current_depth < max_iterations; current_depth++) {
-        mandelbrot_iter(c_v, z);
+        mandelbrot_simd_iter(c_v, z);
 
         __m256 zre_abs = m256_abs(z[0]);
         __m256 zim_abs = m256_abs(z[1]);
@@ -134,6 +165,15 @@ void run_mandelbrot_calc(mandelbrot_calc_t const *calc, unsigned max_iterations)
         for (unsigned x = 0; x < calc->x_res; x += 8) {
             unsigned index = y * calc->x_res + x;
             mandelbrot(&calc->c_values[2 * index], &calc->depth[index], max_iterations);
+        }
+    }
+}
+
+void run_mandelbrot_calc_simd(mandelbrot_calc_t const *calc, unsigned max_iterations) {
+    for (unsigned y = 0; y < calc->y_res; y++) {
+        for (unsigned x = 0; x < calc->x_res; x += 8) {
+            unsigned index = y * calc->x_res + x;
+            mandelbrot_simd(&calc->c_values[2 * index], &calc->depth[index], max_iterations);
         }
     }
 }

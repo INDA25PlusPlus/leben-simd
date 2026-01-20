@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     mandelbrot_calc_t calc = make_mandelbrot_calc(x_res, y_res);
 
     init_mandelbrot_calc(&calc, x_pos, y_pos, view_height, max_iterations, pixel_aspect_ratio);
-    run_mandelbrot_calc(&calc, max_iterations);
+    run_mandelbrot_calc_simd(&calc, max_iterations);
 
     if (out_path == NULL) {
         char ascii_map[12] = " .:-=+*#%@@";
