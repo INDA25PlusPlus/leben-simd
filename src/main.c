@@ -8,29 +8,11 @@
 #include "mandelbrot/mandelbrot.h"
 
 
-unsigned to_int(char *str) {
-    char *endptr;
-    long num = strtol(str, &endptr, 10);
-    if (*endptr != '\0') {
-        printf("Invalid integer number '%s'\n", str);
-        exit(EXIT_FAILURE);
-    }
-    return (unsigned) num;
-}
+unsigned to_int(char *str);
 
-float to_float(char *str) {
-    char *endptr;
-    float num = strtof(str, &endptr);
-    if (*endptr != '\0') {
-        printf("Invalid floating number '%s'\n", str);
-        exit(EXIT_FAILURE);
-    }
-    return num;
-}
+float to_float(char *str);
 
-void write_img(void *file_handle, void *data, int size) {
-    fwrite(data, 1, size, file_handle);
-}
+void write_img(void *file_handle, void *data, int size);
 
 int main(int argc, char *argv[]) {
     unsigned x_res, y_res;
@@ -116,4 +98,28 @@ int main(int argc, char *argv[]) {
     destroy_mandelbrot_calc(&calc);
 
     return 0;
+}
+
+unsigned to_int(char *str) {
+    char *endptr;
+    long num = strtol(str, &endptr, 10);
+    if (*endptr != '\0') {
+        printf("Invalid integer number '%s'\n", str);
+        exit(EXIT_FAILURE);
+    }
+    return (unsigned) num;
+}
+
+float to_float(char *str) {
+    char *endptr;
+    float num = strtof(str, &endptr);
+    if (*endptr != '\0') {
+        printf("Invalid floating number '%s'\n", str);
+        exit(EXIT_FAILURE);
+    }
+    return num;
+}
+
+void write_img(void *file_handle, void *data, int size) {
+    fwrite(data, 1, size, file_handle);
 }
