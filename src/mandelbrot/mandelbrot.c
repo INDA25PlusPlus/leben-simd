@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "mandelbrot.h"
-#include "config.h"
+#include "../config.h"
 #include "math_util.h"
 
 
@@ -41,7 +41,7 @@ void mandelbrot_iter(__m256 const *c, __m256 *z) {
  * c points at {c_real, c_imag}
  * c and depth must be aligned as __m256
  */
-void mandelbrot(float const *c, unsigned *depth) {
+void mandelbrot(float const *c, unsigned *depth, unsigned max_iterations) {
     __m256 const max_abs_v = _mm256_set1_ps(max_abs);
 
     __m256 c_v[2];
@@ -54,7 +54,7 @@ void mandelbrot(float const *c, unsigned *depth) {
 
     __m256i depth_v = _mm256_load_si256((__m256i *) depth);
 
-    for (int current_depth = 0; current_depth < max_depth; current_depth++) {
+    for (int current_depth = 0; current_depth < max_iterations; current_depth++) {
         mandelbrot_iter(c_v, z);
 
         __m256 zre_abs = m256_abs(z[0]);
@@ -107,7 +107,7 @@ mandelbrot_calc_t make_mandelbrot_calc(unsigned x_res, unsigned y_res) {
     return calc;
 }
 
-void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height) {
+void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y_center, float view_height, unsigned max_iterations) {
     float scale = view_height / (float) calc->y_res;
     float horizontal_scale = scale / char_height_ratio;
     float view_width = horizontal_scale * (float) calc->x_res;
@@ -123,24 +123,24 @@ void init_mandelbrot_calc(mandelbrot_calc_t const *calc, float x_center, float y
 
                 calc->c_values[2 * index + xs] = cre;
                 calc->c_values[2 * index + 8 + xs] = cim;
-                calc->depth[index + xs] = max_depth;
+                calc->depth[index + xs] = max_iterations;
             }
         }
     }
 }
 
-void run_mandelbrot_calc(mandelbrot_calc_t const *calc) {
+void run_mandelbrot_calc(mandelbrot_calc_t const *calc, unsigned max_iterations) {
     for (unsigned y = 0; y < calc->y_res; y++) {
         for (unsigned x = 0; x < calc->x_res; x += 8) {
             unsigned index = y * calc->x_res + x;
-            mandelbrot(&calc->c_values[2 * index], &calc->depth[index]);
+            mandelbrot(&calc->c_values[2 * index], &calc->depth[index], max_iterations);
         }
     }
 }
 
-float get_mandelbrot_intensity(mandelbrot_calc_t const *calc, unsigned x, unsigned y) {
+float get_mandelbrot_intensity(mandelbrot_calc_t const *calc, unsigned x, unsigned y, unsigned max_iterations) {
     unsigned index = y * calc->x_res + x;
-    return (float) calc->depth[index] / (float) max_depth;
+    return (float) calc->depth[index] / (float) max_iterations;
 }
 
 void destroy_mandelbrot_calc(mandelbrot_calc_t *calc) {
