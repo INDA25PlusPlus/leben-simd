@@ -159,7 +159,7 @@ int disp_program(int argc, char *argv[]) {
             out_path,
             out_overwrite ? "wb+" : "wb+x");
         if (out_img == NULL) {
-            printf("Failed to open file '%s'\n", out_path);
+            printf("Failed to write to file '%s'\n", out_path);
             exit(EXIT_FAILURE);
         }
 
