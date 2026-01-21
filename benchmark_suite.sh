@@ -16,7 +16,15 @@ run_level() {
 
   run_bench \
     "Standard full picture, 50 iterations" \
-    "build/leben_simd --bench 10 100 1920 1080 -.5 0 3 50"
+    "build/leben_simd --bench 100 100 1920 1080 -.5 0 3 50"
+
+  run_bench \
+    "Zoomed-in mid-iterations, 400 iterations" \
+    "build/leben_simd --bench 10 100 1920 1080 -1.3896051 -.0140649 .0001 400"
+
+  run_bench \
+    "Zoomed-in high-iterations, 6400 iterations" \
+    "build/leben_simd --bench 4 50 1920 1080 .27605 -.00741 .0001 6400"
 }
 
 run_suite() {
