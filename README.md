@@ -1,9 +1,59 @@
 # leben-simd
 
-*'The only thing I hate more than object oriented programming is slow execution time'* <br>
-*\- Benoit Mandelbrot, probably*
+*'The only thing I love more than complex numbers is fast execution time'* <br>
+*\- Benoît Mandelbrot, probably*
 
-Channels the power of SIMD (single instruction, multiple data) to produce blazingly fast 🔥 renders of the Mandelbrot set.
+Channels the power of SIMD (single instruction, multiple data) to produce blazingly fast 🔥 renders of the Mandelbrot set. See below for comparisons:
+
+## Comparisons
+
+The following benchmarks were done on an Intel Core i7-8665U CPU. Benchmarks were done in batches, with each batch preceded by a warmup batch in order to minimize predictive branching and caching disturbances.
+
+Measurements "3.0 ± 1.0 ms" indicate average and standard deviation and are rounded to 4 significant digits. Note that the measured time only includes time spent performing calculations, and not initializing data, outputting images etc.
+
+A complete log can be found at [readme/benchmark.log](readme/benchmark.log).
+
+### Standard full 1920x1080 picture, 50 iterations
+
+<img src="readme/standard.png" width="50%">
+
+`build/leben_simd --bench 100 100 1920 1080 -.5 0 3 50`
+
+(100 batches of 100 runs per build and algorithm type)
+
+| Build type          | SISD             | SIMD             | Times faster |
+|---------------------|------------------|------------------|--------------|
+| Debug (O0)          | 137.4 ± 1.589 ms | 72.75 ± 3.272 ms | 4.95x        |
+| RelWithDebInfo (O2) | 62.85 ± .5334 ms | 14.97 ± .3833 ms | 4.20x        |
+| Release (O3)        | 62.83 ± 2.231 ms | 14.16 ± .2194 ms | 4.44x        |
+
+### Zoomed-in mid-iterations 1920x1080 picture, 400 iterations
+
+<img src="readme/zoomed-1.png" width="50%">
+
+`build/leben_simd --bench 10 100 1920 1080 -1.3896051 -.0140649 .0001 400`
+
+(10 batches of 100 runs per build and algorithm type)
+
+| Build type          | SISD             | SIMD             | Times faster |
+|---------------------|------------------|------------------|--------------|
+| Debug (O0)          | 2830. ± 18.62 ms | 1591. ± 23.80 ms | 1.78x        |
+| RelWithDebInfo (O2) | 1465. ± 17.04 ms | 297.6 ± 1.543 ms | 4.93x        |
+| Release (O3)        | 1462. ± 1.535 ms | 290.9 ± 1.003 ms | 5.03x        |
+
+### Zoomed-in high-iterations 1920x1080 picture, 6400 iterations
+
+<img src="readme/zoomed-2.png" width="50%">
+
+`build/leben_simd --bench 4 50 1920 1080 .27605 -.00741 .0001 6400`
+
+(4 batches of 50 runs per build and algorithm type)
+
+| Build type          | SISD             | SIMD             | Times faster |
+|---------------------|------------------|------------------|--------------|
+| Debug (O0)          | 3662. ± 130.1 ms | 941.8 ± 73.91 ms | 3.89x        |
+| RelWithDebInfo (O2) | 4072. ± 4.849 ms | 957.4 ± 3.926 ms | 4.26x        |
+| Release (O3)        | 4089. ± 6.249 ms | 943.8 ± 1.847 ms | 4.33x        |
 
 ## Usage
 
