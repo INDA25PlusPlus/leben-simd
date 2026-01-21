@@ -55,6 +55,10 @@ A complete log can be found at [readme/benchmark.log](readme/benchmark.log).
 | RelWithDebInfo (O2) | 4072. ± 4.849 ms | 957.4 ± 3.926 ms | 4.26x        |
 | Release (O3)        | 4089. ± 6.249 ms | 943.8 ± 1.847 ms | 4.33x        |
 
+### Discussion
+
+Overall, we see a ~4-5x improvement for SIMD over SISD for optimized builds, for both low-iteration and high-iteration renders. Compared to the theoretical 8x improvement in parallelization (using 256-bit SIMD instruction with 32-bit floats), this is a pretty good result. This improvement does not seem to correlate (or at least not very strongly) with the iteration count. This indicates that the CPU time is in large majority spent on the main iteration loop, and not on other parts of the routine which are unaffected by the SIMD optimization. Additionally, the time differences between O2 and O3 level runs are statistically insignificant, suggesting that optimizations past O2 do not affect the high-runtime main iterative algorithm.
+
 ## Usage
 
 ### Building
